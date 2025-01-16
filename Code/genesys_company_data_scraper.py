@@ -18,7 +18,7 @@ def read_input_csv(file_path: str) -> pd.DataFrame:
     """Read the input CSV file containing company URLs."""
     return pd.read_csv(file_path)
 
-def initialize_details(url: str) -> Dict:
+def initialize_details(url: str, region: str) -> Dict:
     """Initialize the details dictionary with None values."""
     return {
         'company_name': None,
@@ -26,7 +26,8 @@ def initialize_details(url: str) -> Dict:
         'location': None,
         'partners': None,
         'person_quoted': None,
-        'product_url': url
+        'product_url': url,
+        'region': region  # Add region to the dictionary
     }
 
 def get_soup(url: str) -> BeautifulSoup:
@@ -87,9 +88,9 @@ def extract_sidebar_info(soup, details: Dict) -> Dict:
                 details['location'] = location
     return details
 
-def extract_details(url: str) -> Dict:
+def extract_details(url: str, region: str) -> Dict:
     """Main function to extract all details from a URL."""
-    details = initialize_details(url)
+    details = initialize_details(url, region)  # Pass region to the details
     soup = get_soup(url)
     
     details = extract_sidebar_info(soup, details)
@@ -109,12 +110,13 @@ def process_urls(df: pd.DataFrame, output_path: str):
     for _, row in df.iterrows():
         try:
             company_url = row['company_url']
+            region = row['region']  # Read region from the CSV file
             
             # Add random delay between 2 to 5 seconds
             delay = random.uniform(2, 5)
             time.sleep(delay)
             
-            details = extract_details(company_url)
+            details = extract_details(company_url, region)  # Pass region to the details function
             append_to_csv(details, output_path, first_write)
             
             print(f"Successfully scraped and saved data for URL: {company_url}")
@@ -128,8 +130,8 @@ def process_urls(df: pd.DataFrame, output_path: str):
 
 def main():
     """Main function to orchestrate the scraping process."""
-    input_path = 'Data/customer_story_links.csv'
-    output_path = 'Data/company_data.csv'
+    input_path = '/home/user/Documents/fantacode_task/Data/company_links.csv'  # Update the path
+    output_path = '/home/user/Documents/fantacode_task/Data/company_data.csv'  # Update the path
     
     df = read_input_csv(input_path)
     process_urls(df, output_path)
