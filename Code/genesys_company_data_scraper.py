@@ -52,21 +52,41 @@ def extract_field(paragraph, field_name: str) -> Optional[str]:
     return None
 
 def extract_partners(soup) -> Optional[List[str]]:
-    """Extract partner details from soup."""
+    """Extract partner details from soup, handling both old and new HTML structures."""
+    # Check for the original container with class 'cs-partner-container'
     partner_container = soup.find('div', class_='cs-sidebar-item cs-partner-container')
     if partner_container:
         partners = partner_container.find_all('a')
         partner_list = [partner.text.strip() for partner in partners]
-        return partner_list if partner_list else None
+        if partner_list:
+            return partner_list
+
+    # Check for the new container with class 'cs-custom-container custom-plain'
+    partner_container_new = soup.find('div', class_='cs-sidebar-item cs-custom-container custom-plain')
+    if partner_container_new:
+        partners = partner_container_new.find_all('a')
+        partner_list = [partner.text.strip() for partner in partners]
+        if partner_list:
+            return partner_list
+
     return None
 
 def extract_quote(soup) -> Optional[str]:
-    """Extract person quoted from soup."""
+    """Extract person quoted from soup, handling both old and new HTML structures."""
+    # Check for the original structure
     quote_speaker = soup.find('div', class_='quote-speaker')
     if quote_speaker:
         quote_info = quote_speaker.find('p')
         if quote_info and '—' in quote_info.text:
             return quote_info.text.split('—')[1].strip()
+
+    # Check for the new structure with the class 'cq_block_speaker'
+    quote_speaker_new = soup.find('div', class_='wpb_content_element customer_quote_block')
+    if quote_speaker_new:
+        speaker_info = quote_speaker_new.find('p', class_='cq_block_speaker')
+        if speaker_info:
+            return speaker_info.text.strip()
+
     return None
 
 def extract_sidebar_info(soup, details: Dict) -> Dict:

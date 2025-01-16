@@ -79,6 +79,10 @@ def scrape_customer_story_links_and_regions(page):
                 
                 link = link_element.get_attribute("href") if link_element else None
                 region = region_element.inner_text().strip() if region_element else "Unknown"
+                
+                # Check if the region is "NA" and return "NA"
+                if region == "NA":
+                    region = "NA"
 
                 if link:
                     product_data.append((link, region))
